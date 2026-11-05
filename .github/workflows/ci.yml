@@ -1,18 +1,35 @@
 name: banking-platform-ci
+
 on:
   push:
     branches: [main]
   pull_request:
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
-        continue-on-error: true
-      - run: docker build -t banking-platform:portfolio .
-        continue-on-error: true
-      - run: kubectl apply --dry-run=client -f deploy/k8s
+
+      - name: Install and test Node application when source is present
+        if: ${{ hashFiles('package.json') != '' }}
+        run: |
+          npm ci
+          npm test --if-present
+          npm run lint --if-present
+
+      - name: Validate sanitized Kubernetes manifests
+        if: ${{ hashFiles('deploy/k8s/**/*.yaml') != '' }}
+        run: |
+          kubectl apply --dry-run=client -f deploy/k8s
+
+      - name: Validate repository structure
+        run: |
+          test -f README.md
+          test -d infra/terraform
+          test -d ansible
+          test -f .semaphore/semaphore.yml
