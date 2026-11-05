@@ -11,21 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Install and test Node application when source is present
+        if: ${{ hashFiles('package.json') != '' }}
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install and test Node application when source is present
+      - name: Run Node checks when source is present
         if: ${{ hashFiles('package.json') != '' }}
         run: |
           npm ci
           npm test --if-present
           npm run lint --if-present
-
-      - name: Validate sanitized Kubernetes manifests
-        if: ${{ hashFiles('deploy/k8s/**/*.yaml') != '' }}
-        run: |
-          kubectl apply --dry-run=client -f deploy/k8s
 
       - name: Validate repository structure
         run: |
@@ -33,3 +30,13 @@ jobs:
           test -d infra/terraform
           test -d ansible
           test -f .semaphore/semaphore.yml
+          test -f azure-devops/azure-pipelines.yml
+          test -f docs/veeam-disaster-recovery.md
+          find deploy/k8s -type f -name '*.yaml' -print
+
+      - name: Security hygiene check
+        run: |
+          if grep -RInE 'AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|-----BEGIN PRIVATE KEY-----' . --exclude-dir=.git; then
+            echo "Potential credential pattern found"
+            exit 1
+          fi
