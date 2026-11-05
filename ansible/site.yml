@@ -1,0 +1,9 @@
+- name: Banking platform baseline
+  hosts: banking_nodes
+  become: true
+  roles:
+    - common
+    - docker
+    - monitoring-agent
+    - backup-agent
+    - hardening
