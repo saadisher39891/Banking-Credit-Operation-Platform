@@ -1,0 +1,19 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: banking-platform
+    folder: Banking Platform
+    interval: 1m
+    rules:
+      - uid: api-error-rate
+        title: API error rate high
+        condition: A
+        data: []
+        annotations:
+          summary: "Node.js API 5xx rate requires investigation"
+      - uid: backup-failure
+        title: Backup job failure
+        condition: A
+        data: []
+        annotations:
+          summary: "Veeam backup verification failed"
