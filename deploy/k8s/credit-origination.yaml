@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: credit-origination
+  namespace: banking-platform
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: credit-origination }
+  template:
+    metadata:
+      labels: { app: credit-origination }
+    spec:
+      containers:
+        - name: credit-origination
+          image: registry.example.com/credit-origination:1.0.0
+          ports: [{containerPort: 3000}]
+          envFrom:
+            - secretRef: { name: banking-platform-secrets }
