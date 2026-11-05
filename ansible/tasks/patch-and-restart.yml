@@ -1,0 +1,14 @@
+- name: Apply security updates
+  hosts: banking_nodes
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt: { update_cache: true, cache_valid_time: 3600 }
+    - name: Apply security upgrades
+      apt:
+        upgrade: dist
+        dpkg_options: force-confold
+    - name: Restart required services
+      service:
+        name: docker
+        state: restarted
