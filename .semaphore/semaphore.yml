@@ -1,0 +1,31 @@
+version: v1.0
+name: banking-platform
+agent:
+  machine:
+    type: e1-standard-2
+blocks:
+  - name: Validate
+    task:
+      jobs:
+        - name: npm test and lint
+          commands:
+            - checkout
+            - npm ci
+            - npm test --if-present
+            - npm run lint --if-present
+  - name: Build
+    task:
+      jobs:
+        - name: Build Docker images
+          commands:
+            - checkout
+            - docker build -t banking-platform:$SEMAPHORE_WORKFLOW_ID .
+  - name: Deploy
+    run:
+      when: branch = 'main'
+    task:
+      jobs:
+        - name: Deploy with Ansible
+          commands:
+            - checkout
+            - ansible-playbook -i ansible/inventory/production ansible/tasks/deploy-service.yml
